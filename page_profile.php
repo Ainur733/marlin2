@@ -37,12 +37,17 @@ $user = get_user_by_id($id);
                     </li>
                 </ul>
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Войти</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Выйти</a>
-                    </li>
+                <?php if(!$_SESSION['user']): ?>
+            <li class="nav-item">
+                <a class="nav-link" href="page_login.php">Войти</a>
+            </li>
+            <?php else: ?>
+            <li class="nav-item">
+                <a class="nav-link" href="/logout_script.php/?id=<?php if(isset($_SESSION['user'])) {
+                    echo $_SESSION['user']['id'];
+                } ?>">Выйти</a>
+            </li>
+            <?php endif; ?>
                 </ul>
             </div>
         </nav>

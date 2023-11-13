@@ -95,7 +95,8 @@ function is_autor($user)
 {
     if (get_logged_user() == $user) {
         return true;
-    } else return false;
+    } else
+        return false;
 }
 
 function get_users()
@@ -191,40 +192,60 @@ function update_credentials($id, $email, $password)
 {
     $user = get_user_by_email($email);
 
-
-    if (empty($email)) {
-        set_flash_message("danger", "Email не может быть пустым");
-        redirect_to("/security.php?id=$id");
-        exit();
-    }
     if (!empty($user) && $user['email'] == $email) {
-        if (empty($password)) {
-            set_flash_message("danger", "Пароль не может быть пустым");
-            redirect_to("/security.php?id=$id");
-            exit();
-        }
-    }
-
-    if (empty($user)) {
-        if (empty($password)) {
-            set_flash_message("danger", "Пароль не может быть пустым");
-            redirect_to("/security.php?id=$id");
-            exit();
-        }
-        set_flash_message("danger", "Email уже занят");
-        redirect_to("/security.php?id=$id");
-        exit();
-    }
-
-
-    $pdo = new PDO("mysql:dbname=marlin2;host=localhost", "root", "");
-    $password_hash = password_hash($password, PASSWORD_DEFAULT);
-    $sql = "UPDATE users SET 
+        if (!empty($password)) {
+            $pdo = new PDO("mysql:dbname=marlin2;host=localhost", "root", "");
+            $password_hash = password_hash($password, PASSWORD_DEFAULT);
+            $sql = "UPDATE users SET 
                  `email` = :email,
                  `password` = :password
              WHERE id=:id";
+            $statement = $pdo->prepare($sql);
+            $statement->execute(['email' => $email, 'password' => $password_hash, 'id' => $id]);
+        } else {
+            set_flash_message("danger", "Пароль не может быть пустым");
+            redirect_to("/security.php?id=$id");
+            exit();
+        }
+
+
+
+    } else {
+        if (empty($user)) {
+            if (!empty($password)) {
+                $pdo = new PDO("mysql:dbname=marlin2;host=localhost", "root", "");
+                $password_hash = password_hash($password, PASSWORD_DEFAULT);
+                $sql = "UPDATE users SET 
+                     `email` = :email,
+                     `password` = :password
+                 WHERE id=:id";
+                $statement = $pdo->prepare($sql);
+                $statement->execute(['email' => $email, 'password' => $password_hash, 'id' => $id]);
+            }else {
+                set_flash_message("danger", "Пароль не может быть пустым");
+                redirect_to("/security.php?id=$id");
+                exit();
+            }
+
+
+        } else {
+            set_flash_message("danger", "Email уже занят");
+            redirect_to("/security.php?id=$id");
+            exit();
+        }
+    }
+
+}
+
+function remove_user($id)
+{
+    $pdo = new PDO("mysql:dbname=marlin2;host=localhost", "root", "");
+    $sql = "DELETE FROM users WHERE   id=:id";
     $statement = $pdo->prepare($sql);
-    $statement->execute(['email' => $email, 'password' => $password_hash, 'id' => $id]);
+    $statement->execute(['id' => $id]);
+}
 
-
+function logout($id) {
+    unset($_SESSION['user']);
+    redirect_to("/login.php");
 }
